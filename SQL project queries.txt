@@ -1,0 +1,63 @@
+/* Query 1 */
+Q1: Who is the best customer?
+
+SELECT c.CustomerId ID,C.FirstName,c.LastName, sum(i.total)
+FROM Customer c
+JOIN Invoice i
+on c.CustomerId = i.CustomerId
+group by 1
+order by 4 DESC;
+
+----------------------------------------------------------
+/* Query 2 */
+Q2: Who is writing the most rock music?
+
+SELECT a.ArtistId, a.Name, count(t.name) songs
+FROM Artist a
+JOIN Album b
+on a.ArtistId = b.ArtistId
+JOIN Track t
+on b.AlbumId = t.AlbumId
+JOIN Genre g
+on t.GenreId = g.GenreId
+WHERE g.Name like 'Rock'
+group by 1,2
+order by 3 DESC
+limit 10;
+
+------------------------------------------------------------
+/* Query 3 */
+Q3: which artist has earned the most according to the InvoiceLines?
+
+SELECT a.Name, sum(i.UnitPrice) AmountSpent
+FROM Artist a
+JOIN Album b
+on a.ArtistId = b.ArtistId
+JOIN Track t
+on b.AlbumId = t.AlbumId
+JOIN InvoiceLine i
+on t.TrackId = i.TrackId
+group by 1
+order by 2 DESC;
+
+
+--------------------------------------------------------------
+/* Query 4 */
+Q4: what is the most popular music Genre for each country?
+
+WITH most_genre AS
+(SELECT count(v.Quantity) Purchases,
+c.Country,g.Name,g.GenreId
+FROM Invoice i
+JOIN Customer c ON c.CustomerId = i.CustomerId
+JOIN InvoiceLine v ON i.InvoiceId = v.InvoiceId
+JOIN track t ON t.TrackId = v.TrackId 
+JOIN genre g ON g.GenreId = t.GenreId
+GROUP BY 2,3,4)
+
+SELECT Purchases,Country Country_Name,Name,GenreId
+FROM most_genre
+WHERE Purchases =
+(SELECT max (Purchases)
+FROM most_genre
+ WHERE country = Country_Name)
